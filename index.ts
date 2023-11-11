@@ -31,6 +31,23 @@ app.get("/getETHprice", async (req: Request, res: Response) => {
   }
 });
 
+//search filter
+app.get("/address", async (req: Request, res: Response) => {
+  try {
+    const { query } = req;
+    const chain = "0x1";
+    const response =
+      await Moralis.EvmApi.transaction.getWalletTransactionsVerbose({
+        address: `${query.address}`,
+        chain,
+      });
+    return res.status(200).json({ response });
+  } catch (error) {
+    console.log("error =>", error);
+    return res.status(400).json();
+  }
+});
+
 // Add this a startServer function that initializes Moralis
 const startServer = async (): Promise<void> => {
   const x = await Moralis.start({
