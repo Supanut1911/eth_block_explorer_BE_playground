@@ -48,6 +48,66 @@ app.get("/address", async (req: Request, res: Response) => {
   }
 });
 
+//getBlockinfo
+app.get("/getblockinfo", async (req: Request, res: Response) => {
+  try {
+    const now = new Date();
+    const latestBlock = await Moralis.EvmApi.block.getDateToBlock({
+      date: now,
+      chain: "0x1",
+    });
+
+    let blockNrOrParentHash: number | string = latestBlock.toJSON().block;
+    let previousBlockInfo = <any>[];
+
+    //loop 5 block
+    for (let i = 0; i < 5; i++) {
+      const previousBlockNrs = await Moralis.EvmApi.block.getBlock({
+        chain: "0x1",
+        blockNumberOrHash: blockNrOrParentHash.toString(),
+      });
+      if (previousBlockNrs) {
+        blockNrOrParentHash = previousBlockNrs.toJSON().parent_hash;
+      }
+
+      //get latest Tx at index = 0
+      if (i == 0) {
+        if (previousBlockNrs) {
+          previousBlockInfo.push({
+            transactions: previousBlockNrs.toJSON().transactions.map((i) => {
+              return {
+                transactionHash: i.hash,
+                time: i.block_timestamp,
+                fromAddress: i.from_address,
+                toAddress: i.to_address,
+                value: i.value,
+              };
+            }),
+          });
+        }
+      }
+      if (previousBlockNrs) {
+        previousBlockInfo.push({
+          blockNumber: previousBlockNrs.toJSON().number,
+          totalTransaction: previousBlockNrs.toJSON().transaction_count,
+          gasUsed: previousBlockNrs.toJSON().gas_used,
+          miner: previousBlockNrs.toJSON().miner,
+          time: previousBlockNrs.toJSON().timestamp,
+        });
+      }
+    }
+    const response = {
+      latestBlock: latestBlock.toJSON().block,
+      previousBlockInfo,
+    };
+    return res.status(200).json(response);
+  } catch (error) {
+    console.log("error=>", error);
+
+    return res.status(400).json();
+  }
+});
+
 // Add this a startServer function that initializes Moralis
 const startServer = async (): Promise<void> => {
   const x = await Moralis.start({
