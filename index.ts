@@ -2,13 +2,12 @@ import express, { Request, Response } from "express";
 import Moralis from "moralis";
 import { EvmChain } from "@moralisweb3/common-evm-utils";
 import "dotenv/config";
-import { log } from "console";
-// import * as cors from "cors";
-const cors = require("cors");
+import cors from "cors";
+
 const app = express();
 
-// app.use(cors);
-const port: number = 3001;
+app.use(cors());
+const port: number = 4000;
 
 // Add a variable for the api key, address, and chain
 const MORALIS_API_KEY: string = `${process.env.MORALIS_API_KEY}`;
@@ -25,7 +24,7 @@ app.get("/getETHprice", async (req: Request, res: Response) => {
       address,
       chain,
     });
-    res.status(200).json({ response });
+    res.status(200).json(response);
   } catch (error) {
     res.status(400).json({ error });
   }
@@ -41,7 +40,7 @@ app.get("/address", async (req: Request, res: Response) => {
         address: `${query.address}`,
         chain,
       });
-    return res.status(200).json({ response });
+    return res.status(200).json(response);
   } catch (error) {
     console.log("error =>", error);
     return res.status(400).json();
@@ -105,6 +104,26 @@ app.get("/getblockinfo", async (req: Request, res: Response) => {
     console.log("error=>", error);
 
     return res.status(400).json();
+  }
+});
+
+app.get("/nft/:address", async (req: Request, res: Response) => {
+  const address = req.params.address;
+  console.log("🚀 ~ file: index.ts:112 ~ app.get ~ address:", address);
+  const chain = EvmChain.SEPOLIA;
+  const tokenId = "0";
+
+  try {
+    const response = await Moralis.EvmApi.nft.getNFTTokenIdOwners({
+      address,
+      chain,
+      tokenId,
+    });
+
+    console.log(response.toJSON());
+    return res.json(response);
+  } catch (error) {
+    console.log("error => ", error);
   }
 });
 
