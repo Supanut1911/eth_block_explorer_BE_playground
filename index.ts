@@ -107,26 +107,44 @@ app.get("/getblockinfo", async (req: Request, res: Response) => {
   }
 });
 
-app.get("/nft/:address", async (req: Request, res: Response) => {
-  const address = req.params.address;
-  console.log("🚀 ~ file: index.ts:112 ~ app.get ~ address:", address);
-  const chain = EvmChain.SEPOLIA;
-  const tokenId = "0";
+//
+app.get(
+  "/nft-owner-by-tokenid/:address",
+  async (req: Request, res: Response) => {
+    const address = req.params.address;
 
-  try {
-    const response = await Moralis.EvmApi.nft.getNFTTokenIdOwners({
-      address,
-      chain,
-      tokenId,
-    });
+    const chain = EvmChain.SEPOLIA;
+    const tokenId = "0";
 
-    console.log(response.toJSON());
-    return res.json(response);
-  } catch (error) {
-    console.log("error => ", error);
+    try {
+      const response = await Moralis.EvmApi.nft.getNFTTokenIdOwners({
+        address,
+        chain,
+        tokenId,
+      });
+      return res.json(response);
+    } catch (error) {
+      console.log("error => ", error);
+    }
   }
-});
+);
 
+app.get(
+  "/nft-owner-by-collection/:address",
+  async (req: Request, res: Response) => {
+    const address = req.params.address;
+    const chain = EvmChain.MUMBAI;
+    try {
+      const response = await Moralis.EvmApi.nft.getNFTOwners({
+        address,
+        chain,
+      });
+      return res.json(response);
+    } catch (error) {
+      console.log("error => ", error);
+    }
+  }
+);
 // Add this a startServer function that initializes Moralis
 const startServer = async (): Promise<void> => {
   const x = await Moralis.start({
